@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>MD5 Simple</title>
+</head>
+<body>
+<input id="t" type="text" value="hello">
+<button onclick="run()">Compute</button>
+<pre id="o"></pre>
+
+<script>
+function r(a,b){return(a<<b)|(a>>>(32-b));}
+function u(a,b){var c=(a&65535)+(b&65535);var d=(a>>>16)+(b>>>16)+(c>>>16);return(d<<16)|(c&65535);}
+function F(x,y,z){return(x&y)|((~x)&z);}
+function G(x,y,z){return(x&z)|(y&(~z));}
+function H(x,y,z){return x^y^z;}
+function I(x,y,z){return y^(x|(~z));}
+function w(str){
+  var e=new TextEncoder().encode(str);
+  var L=e.length*8;
+  var t=e.length+1;
+  while((t%64)!=56)t++;
+  var z=new Uint8Array(t+8);
+  z.set(e);
+  z[e.length]=128;
+  for(var i=0;i<8;i++)z[z.length-8+i]=(L>>>(8*i))&255;
+  var W=new Uint32Array(z.length/4);
+  for(i=0;i<z.length;i+=4){
+    W[i/4]=z[i]|(z[i+1]<<8)|(z[i+2]<<16)|(z[i+3]<<24);
+  }
+  return W;
+}
+function h(x){
+  var s="";
+  for(var i=0;i<4;i++){
+    var b=(x>>>(8*i))&255;
+    s+=b.toString(16).padStart(2,"0");
+  }
+  return s;
+}
+function md5(m){
+  var X=w(m);
+  var A=0x67452301,B=0xefcdab89,C=0x98badcfe,D=0x10325476;
+  var K=new Uint32Array(64);
+  for(var i=0;i<64;i++)K[i]=Math.floor(Math.abs(Math.sin(i+1))*4294967296);
+  var S=[7,12,17,22,7,12,17,22,7,12,17,22,7,12,17,22,
+         5,9,14,20,5,9,14,20,5,9,14,20,5,9,14,20,
+         4,11,16,23,4,11,16,23,4,11,16,23,4,11,16,23,
+         6,10,15,21,6,10,15,21,6,10,15,21,6,10,15,21];
+  for(i=0;i<X.length;i+=16){
+    var a=A,b=B,c=C,d=D, f,g;
+    for(var j=0;j<64;j++){
+      if(j<16){f=F(b,c,d);g=j;}
+      else if(j<32){f=G(b,c,d);g=(5*j+1)%16;}
+      else if(j<48){f=H(b,c,d);g=(3*j+5)%16;}
+      else{f=I(b,c,d);g=(7*j)%16;}
+      var T=u(u(u(a,f),K[j]),X[i+g]);
+      a=d; d=c; c=b; b=u(b,r(T,S[j]));
+    }
+    A=u(A,a); B=u(B,b); C=u(C,c); D=u(D,d);
+  }
+  return h(A)+h(B)+h(C)+h(D);
+}
+function run(){
+  document.getElementById("o").textContent=md5(document.getElementById("t").value);
+}
+</script>
+</body>
+</html>
